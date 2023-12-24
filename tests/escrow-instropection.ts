@@ -19,20 +19,14 @@ import {
   createMintToInstruction,
   getAssociatedTokenAddressSync,
   getMinimumBalanceForRentExemptMint,
-  createTransferCheckedInstruction,
   createTransferInstruction,
-  getOrCreateAssociatedTokenAccount
 } from "@solana/spl-token";
 import { randomBytes } from "crypto";
 
 describe("escrow-instropection", () => {
-  // Configure the client to use the local cluster.
   anchor.setProvider(anchor.AnchorProvider.env());
-
   const program = anchor.workspace.EscrowInstropection as Program<EscrowInstropection>;
-
   const provider = anchor.getProvider();
-
   const connection = provider.connection;
 
   const confirm = async (signature: string): Promise<string> => {
@@ -130,163 +124,7 @@ describe("escrow-instropection", () => {
       .then(log);
   });
 
-  // xit("Take Invalid Ix", async () => {
-  //   let tx = new Transaction();
-
-  //   let takeIx = await program.methods
-  //   .takeStart()
-  //   .accounts({
-  //     ...accounts,
-  //     takerAta: takerAtaA,
-  //     instructions: SYSVAR_INSTRUCTIONS_PUBKEY
-  //   })
-  //   .instruction();
-
-  //   tx.instructions = [
-  //     createAssociatedTokenAccountIdempotentInstruction(taker.publicKey, makerAtaB, maker.publicKey, mintB.publicKey),
-  //     takeIx,
-  //     createTransferCheckedInstruction(
-  //       takerAtaB,
-  //       mintB.publicKey,
-  //       makerAtaB,
-  //       taker.publicKey,
-  //       1_000_000,
-  //       6
-  //     )
-  //   ]
-  //   try {
-  //     await provider.sendAndConfirm(tx, [ taker ]).then(confirm).then(log);
-  //   } catch(e) {
-  //     let error = e as AnchorError;
-  //     for (let log of error.logs) {
-  //       if (
-  //         log.startsWith("Program log: AnchorError") &&
-  //         log.endsWith("Error Code: InvalidIx. Error Number: 6000. Error Message: Invalid instruction.")
-  //       ) {
-  //         return;
-  //       }
-  //     }
-  //     throw e;
-  //   }
-  // })
-
-  // it("Take Invalid Amount", async () => {
-  //   let tx = new Transaction();
-
-  //   let takeIx = await program.methods
-  //   .take()
-  //   .accounts({
-  //     ...accounts,
-  //     takerAta: takerAtaA,
-  //     instructions: SYSVAR_INSTRUCTIONS_PUBKEY
-  //   })
-  //   .instruction();
-
-  //   tx.instructions = [
-  //     createAssociatedTokenAccountIdempotentInstruction(taker.publicKey, makerAtaB, maker.publicKey, mintB.publicKey),
-  //     takeIx,
-  //     createTransferInstruction(
-  //       takerAtaB,
-  //       makerAtaB,
-  //       taker.publicKey,
-  //       1_000_001
-  //     )
-  //   ]
-  //   try {
-  //     await provider.sendAndConfirm(tx, [ taker ]).then(confirm).then(log);
-  //   } catch(e) {
-  //     let error = e as AnchorError;
-  //     for (let log of error.logs) {
-  //       if (
-  //         log.startsWith("Program log: AnchorError") &&
-  //         log.endsWith("Error Code: InvalidAmount. Error Number: 6001. Error Message: Invalid amount.")
-  //       ) {
-  //         return;
-  //       }
-  //     }
-  //     throw e;
-  //   }
-  // })
-
-  // it("Take Invalid Token Program", async () => {
-  //   let tx = new Transaction();
-
-  //   let takeIx = await program.methods
-  //   .take()
-  //   .accounts({
-  //     ...accounts,
-  //     takerAta: takerAtaA,
-  //     instructions: SYSVAR_INSTRUCTIONS_PUBKEY
-  //   })
-  //   .instruction();
-
-  //   tx.instructions = [
-  //     createAssociatedTokenAccountIdempotentInstruction(taker.publicKey, makerAtaB, maker.publicKey, mintB.publicKey),
-  //     takeIx,
-  //     createTransferInstruction(
-  //       takerAtaB,
-  //       makerAtaB,
-  //       taker.publicKey,
-  //       1_000_000,
-  //       undefined,
-  //       TOKEN_2022_PROGRAM_ID
-  //     )
-  //   ]
-  //   try {
-  //     await provider.sendAndConfirm(tx, [ taker ]).then(confirm).then(log);
-  //   } catch(e) {
-  //     let error = e as AnchorError;
-  //     for (let log of error.logs) {
-  //       if (
-  //         log.startsWith("Program log: AnchorError") &&
-  //         log.endsWith("Error Code: InvalidTokenProgram. Error Number: 6002. Error Message: Invalid Token program.")
-  //       ) {
-  //         return;
-  //       }
-  //     }
-  //     throw e;
-  //   }
-  // })
-
-  // it("Take Invalid Maker ATA", async () => {
-  //   let tx = new Transaction();
-
-  //   let takeIx = await program.methods
-  //   .take()
-  //   .accounts({
-  //     ...accounts,
-  //     takerAta: takerAtaA,
-  //     instructions: SYSVAR_INSTRUCTIONS_PUBKEY
-  //   })
-  //   .instruction();
-
-  //   tx.instructions = [
-  //     createAssociatedTokenAccountIdempotentInstruction(taker.publicKey, makerAtaB, maker.publicKey, mintB.publicKey),
-  //     takeIx,
-  //     createTransferInstruction(
-  //       takerAtaB,
-  //       takerAtaB,
-  //       taker.publicKey,
-  //       1_000_000,
-  //     )
-  //   ]
-  //   try {
-  //     await provider.sendAndConfirm(tx, [ taker ]).then(confirm).then(log);
-  //   } catch(e) {
-  //     let error = e as AnchorError;
-  //     for (let log of error.logs) {
-  //       if (
-  //         log.startsWith("Program log: AnchorError") &&
-  //         log.endsWith("Error Code: InvalidMakerATA. Error Number: 6003. Error Message: Invalid Maker ATA.")
-  //       ) {
-  //         return;
-  //       }
-  //     }
-  //     throw e;
-  //   }
-  // })
-
-  it("Take", async () => {
+  it("Take (w/ takeEnd instruction", async () => {
 
     let takeStartIx = await program.methods
     .takeStart()
@@ -304,7 +142,7 @@ describe("escrow-instropection", () => {
     .instruction();
 
     let takeEndIx = await program.methods
-    .takeEnd(new BN(1000000))
+    .takeEnd(new BN(1e6))
     .accounts({
       taker: taker.publicKey,
       maker: maker.publicKey,
@@ -325,6 +163,103 @@ describe("escrow-instropection", () => {
       createAssociatedTokenAccountIdempotentInstruction(taker.publicKey, makerAtaB, maker.publicKey, mintB.publicKey),  
       takeStartIx,
       takeEndIx
+    ]
+    try {
+      await provider.sendAndConfirm(tx, [ taker ]).then(confirm).then(log);
+    } catch(e) {
+      console.log(e);
+      throw(e)
+    }
+  })
+
+  it("Make", async () => {
+
+    try {
+    await program.methods
+      .make(new BN(1e6), new BN(1e6))
+      .accounts({...accounts, makerAta: makerAtaA})
+      .signers([maker])
+      .rpc()
+      .then(confirm)
+      .then(log);
+    } catch(e) {
+      console.log(e);
+      throw(e)
+    }
+  });
+
+  it("Take w/ Spl_transfer", async () => {
+    let tx = new Transaction();
+
+    let takeIx = await program.methods
+    .takeToken()
+    .accounts({
+      taker: taker.publicKey,
+      maker: maker.publicKey,
+      sendingAta: vault,
+      destinationAta: takerAtaA,
+      escrow,
+      instructions: SYSVAR_INSTRUCTIONS_PUBKEY,
+      tokenProgram: TOKEN_PROGRAM_ID,
+      associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
+      systemProgram: SystemProgram.programId
+    })
+    .instruction();
+
+    tx.instructions = [
+      createAssociatedTokenAccountIdempotentInstruction(taker.publicKey, makerAtaB, maker.publicKey, mintB.publicKey),
+      takeIx,
+      createTransferInstruction(
+        takerAtaB,
+        makerAtaB,
+        taker.publicKey,
+        1e6,
+      )
+    ]
+    try {
+      await provider.sendAndConfirm(tx, [ taker ]).then(confirm).then(log);
+    } catch(e) {
+      console.log(e);
+      throw(e)
+    }
+  })
+
+  it("Make", async () => {
+    await program.methods
+      .make(new BN(1e6), new BN(1e6))
+      .accounts({...accounts, makerAta: makerAtaA})
+      .signers([maker])
+      .rpc()
+      .then(confirm)
+      .then(log);
+  });
+
+  it("Take w/ Sol_transfer", async () => {
+    let tx = new Transaction();
+
+    let takeIx = await program.methods
+    .takeSol()
+    .accounts({
+      taker: taker.publicKey,
+      maker: maker.publicKey,
+      sendingAta: vault,
+      destinationAta: takerAtaA,
+      escrow,
+      instructions: SYSVAR_INSTRUCTIONS_PUBKEY,
+      tokenProgram: TOKEN_PROGRAM_ID,
+      associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
+      systemProgram: SystemProgram.programId
+    })
+    .instruction();
+
+    tx.instructions = [
+      createAssociatedTokenAccountIdempotentInstruction(taker.publicKey, makerAtaB, maker.publicKey, mintB.publicKey),
+      takeIx,
+      SystemProgram.transfer({
+        fromPubkey: taker.publicKey,
+        toPubkey: maker.publicKey,
+        lamports: 1e6,
+      }),
     ]
     try {
       await provider.sendAndConfirm(tx, [ taker ]).then(confirm).then(log);
